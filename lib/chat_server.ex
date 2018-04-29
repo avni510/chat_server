@@ -13,81 +13,56 @@ defmodule ChatServer do
   end
 
   defp chat_setup(socket, agent) do
-    send_to_socket("Hi, what's your name?\n", socket)
-    name = read_line(socket) |> String.trim
-    sender =
-      agent
-      |> Users.find_by_name(name)
-      |> case do
-        nil -> create_and_add_user(agent, socket, name)
-      end
+    sender = get_sender_name(socket, agent)
+    receipent = get_receipent(socket)
+    room = get_chat_room(agent, sender, receipent)
 
-    send_to_socket("What user would you like to chat with?\n", socket)
-    username = read_line(socket) |> String.trim
+    Server.serve(sender.socket, room)
+  end
 
-    room =
+  defp get_sender_name(socket, agent) do
+    Server.send_to_socket("Hi, what's your name?\n", socket)
+    name = Server.read_line(socket) |> String.trim
+    agent
+    |> Users.find_by_name(name)
+    |> case do
+      nil -> create_and_add_user(agent, socket, name)
+    end
+  end
+
+  defp get_receipent(socket) do
+    Server.send_to_socket("What user would you like to chat with?\n", socket)
+    Server.read_line(socket) |> String.trim
+  end
+
+  defp get_chat_room(agent, sender, receipent) do
       agent
-      |> ChatRooms.find_by_name("#{username}#{sender.name}")
+      |> ChatRooms.find_by_name("#{receipent}#{sender.name}")
       |> case do
         nil -> agent
-                |> Users.find_by_name(username)
+                |> Users.find_by_name(receipent)
                 |> case do
-                  nil -> send_to_socket("this user does not exist", sender.socket)
-                  recipient ->
+                  nil -> Server.send_to_socket("this user does not exist", sender.socket)
+                  user ->
                     create_and_add_chat_room(
                       agent,
-                      [sender, recipient],
-                      "#{sender.name}#{recipient.name}"
+                      [sender, user],
+                      "#{sender.name}#{user.name}"
                     )
                 end
         room -> room
       end
-    serve(sender.socket, room)
   end
 
-  def create_and_add_user(agent, socket, name) do
+  defp create_and_add_user(agent, socket, name) do
     user = Users.create(self(), socket, name)
     Users.add(agent, user)
     user
   end
 
-  def create_and_add_chat_room(agent, users, name) do
+  defp create_and_add_chat_room(agent, users, name) do
     room = ChatRooms.create(users, name, [])
     ChatRooms.add(agent, room)
     room
-  end
-
-  defp serve(socket, room) do
-    socket
-    |> read_line()
-    |> write_line(socket, room)
-
-    serve(socket, room)
-  end
-
-  defp read_line(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
-  end
-
-  defp send_to_socket(line, socket) do
-    :gen_tcp.send(socket, line)
-  end
-
-  defp write_line(line, socket, room) do
-    broadcast(room, line, socket)
-  end
-
-  defp broadcast(room, line, socket) do
-    sender =
-      room.users
-      |> Enum.filter(fn user -> user.socket == socket end)
-      |> Enum.at(0)
-
-    room.users
-    |> List.delete(sender)
-    |> Enum.map(fn user ->
-      send_to_socket("#{sender.name}: #{line}", user.socket)
-    end)
   end
 end
