@@ -1,8 +1,18 @@
 defmodule ChatServer.AppState do
-  use Agent
+  alias Otp.CustomAgent
+  
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]},
+      type: :worker,
+      restart: :permanent,
+      shutdown: 500
+    }
+  end
 
   def start_link(_) do
-    Agent.start_link(fn -> initial_state() end, name: __MODULE__)  
+    CustomAgent.start_link(fn -> initial_state() end, name: __MODULE__)  
   end
 
   def initial_state do
@@ -10,18 +20,18 @@ defmodule ChatServer.AppState do
   end
 
   def add(key, element) do
-    Agent.update(__MODULE__, fn state -> 
+    CustomAgent.update(__MODULE__, fn state -> 
       value = Map.get(state, key)
       Map.put(state, key, value ++ [element]) 
     end)
   end
 
   def get(key) do
-    Agent.get(__MODULE__, fn state -> Map.get(state, key) end)
+    CustomAgent.get(__MODULE__, fn state -> Map.get(state, key) end)
   end
 
   def delete(key, element) do
-    Agent.update(__MODULE__, fn state -> 
+    CustomAgent.update(__MODULE__, fn state -> 
       new_value = 
         state
         |> Map.get(key)
