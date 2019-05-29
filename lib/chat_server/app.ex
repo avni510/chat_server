@@ -1,31 +1,29 @@
 defmodule ChatServer.App do
+  @protocol Application.get_env(:chat_server, :protocol)
+
+  alias ChatServer.Messenger
+
   def accept_connections(port) do
-    {:ok, server_socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
-    IO.puts("Accepting connections on port #{port}") 
+    {:ok, server_socket} = @protocol.listen(port) 
     loop_acceptor(server_socket)
   end
 
   defp loop_acceptor(server_socket) do
-    {:ok, client_socket} = :gen_tcp.accept(server_socket)
-    serve(client_socket)
+    {:ok, client_socket} = @protocol.accept(server_socket) 
+    spawn(fn -> execute_chat(client_socket) end)
+
     loop_acceptor(server_socket)
   end
 
-  defp serve(socket) do
+  defp serve(socket, sender) do
     socket
-    |> read_line()
-    |> write_line(socket)
-
-    serve(socket)
+    |> Messenger.communicate(sender)
+    |> serve(sender)
   end
 
-  defp read_line(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
-  end
-
-  defp write_line(line, socket) do
-    :gen_tcp.send(socket, line)
+  defp execute_chat(client_socket) do
+    {:ok, sender} = Messenger.get_sender(client_socket)
+    serve(client_socket, sender)
   end
 end
 

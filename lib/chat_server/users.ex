@@ -5,18 +5,18 @@ end
 
 defmodule ChatServer.Users do
   alias ChatServer.User
-  alias ChatServer.State
+  alias ChatServer.AppState
 
   def add(params) do
     user = struct(User, params)
 
-    State.add(:users, user)
+    AppState.add(:users, user)
 
     {:ok, user}
   end
 
   def get(name) do
-    users = State.get(:users)
+    users = AppState.get(:users)
 
     Enum.find(users, fn user -> user.name == name end)
   end
@@ -24,6 +24,10 @@ defmodule ChatServer.Users do
   def delete(name) do
     user = get(name)
 
-    State.delete(:users, user)
+    AppState.delete(:users, user)
+  end
+
+  def all do
+    AppState.get(:users)
   end
 end

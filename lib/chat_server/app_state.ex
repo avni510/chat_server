@@ -1,4 +1,4 @@
-defmodule ChatServer.State do
+defmodule ChatServer.AppState do
   use Agent
 
   def start_link(_) do

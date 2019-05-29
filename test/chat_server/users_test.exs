@@ -4,7 +4,7 @@ defmodule ChatServer.UsersTest do
   alias ChatServer.Users
   import Support.Helper
 
-  setup :clean_state
+  setup :reset_state
 
   describe "get/1" do
     test "given a name it returns a user" do

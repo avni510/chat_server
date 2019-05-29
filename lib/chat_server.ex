@@ -4,7 +4,7 @@ defmodule ChatServer do
   alias ChatServer.App
 
   def start(_type, _args) do
-    [ChatServer.State]
+    [ChatServer.AppState]
     |> Supervisor.start_link(strategy: :one_for_one)
     |> start_server(Mix.env())
   end

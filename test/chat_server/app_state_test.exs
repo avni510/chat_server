@@ -1,18 +1,18 @@
-defmodule ChatServer.StateTest do
+defmodule ChatServer.AppStateTest do
   use ExUnit.Case
 
-  alias ChatServer.State
+  alias ChatServer.AppState
   alias ChatServer.User
   import Support.Helper
 
-  setup :clean_state
+  setup :reset_state
 
   describe "get/1" do
     test "it returns all the values for a given key" do
       user = %User{name: "test", pid: 123}
-      State.add(:users, user)
+      AppState.add(:users, user)
 
-      users = State.get(:users)
+      users = AppState.get(:users)
 
       assert users == [user]
     end
@@ -21,11 +21,11 @@ defmodule ChatServer.StateTest do
   describe "delete/2" do
     test "it deletes a given element" do
       user = %User{name: "test", pid: 123}
-      State.add(:users, user)
+      AppState.add(:users, user)
 
-      State.delete(:users, user)
+      AppState.delete(:users, user)
 
-      assert State.get(:users) == []
+      assert AppState.get(:users) == []
     end
   end
 end
