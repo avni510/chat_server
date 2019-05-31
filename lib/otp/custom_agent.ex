@@ -4,7 +4,7 @@ defmodule Otp.CustomAgent do
   # Client
 
   def start_link(func, name: name) do
-    GenServer.start_link(__MODULE__, func, name: name)
+    GenServer.start_link(__MODULE__, func.(), name: name)
   end
 
   # synchronous

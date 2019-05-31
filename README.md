@@ -1,21 +1,19 @@
 # ChatServer
 
-**TODO: Add description**
+This is miniature terminal chat app written in Elixir using the TCP protocol.
 
-## Installation
+# Requirements
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `chat_server` to your list of dependencies in `mix.exs`:
+* elixir `~> 1.8.1`
+* Install telnet with `brew install telnet`
 
-```elixir
-def deps do
-  [
-    {:chat_server, "~> 0.1.0"}
-  ]
-end
-```
+# Usage
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/chat_server](https://hexdocs.pm/chat_server).
+* Run the chat server with `mix run`. It will run on port 8000
+* Connect to the chat server with `telnet 127.0.0.1 8000`
 
+** Please note multiple terminal sessions should connect to the chat server in order to display the full functionality
+of the app
+
+# Tests
+* `mix test`
